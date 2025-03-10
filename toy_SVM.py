@@ -2,10 +2,11 @@ import os
 import numpy as np
 import pandas as pd
 import time
+import random
 from sklearn import metrics
 from sklearn_svm_classifier import SVMClassifier
 
-def split_labelled(data, setlen=0):
+def split_labelled(data, setlen=0, flag_shuffle=False):
     print("SPLITTING DATASET...")
     list_split = []
     pos_enum = 0
@@ -23,6 +24,9 @@ def split_labelled(data, setlen=0):
                 list_split[pos_enum].append(line_export)
             except IndexError:
                 list_split.append([line_export])
+
+    if flag_shuffle == True:
+        random.shuffle(list_split)
 
     print("OK")
     
@@ -88,7 +92,7 @@ def main():
     with open("data/dev.conll", "r") as file:
         raw_test_data = file.read()
 
-    work_list = split_labelled(raw_data, 1000)
+    work_list = split_labelled(raw_data, 1000, True)
     test_list = split_labelled(raw_test_data)
 
     items = []

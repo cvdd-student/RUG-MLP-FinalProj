@@ -1,17 +1,20 @@
 import os
 import numpy as np
 import pandas as pd
+import time
 from sklearn import metrics
 from sklearn_svm_classifier import SVMClassifier
 
-def split_labelled(data):
-    print("SPLITTING DATASET...", end="")
+def split_labelled(data, setlen=0):
+    print("SPLITTING DATASET...")
     list_split = []
     pos_enum = 0
 
     for line in data.split("\n"):
         if line == "":
             pos_enum += 1
+        elif line[:11] == "# sent_enum":
+            pass
         elif line[0] == "#":
             pass
         else:
@@ -20,9 +23,13 @@ def split_labelled(data):
                 list_split[pos_enum].append(line_export)
             except IndexError:
                 list_split.append([line_export])
-    
+
     print("OK")
-    return list_split
+    
+    if setlen == 0:
+        return list_split
+    else:
+        return list_split[:setlen]
 
 
 def split_test(data):
@@ -31,7 +38,7 @@ def split_test(data):
     for line in data.split("\n"):
         if line != "":
             list_export.append(line)
-    
+
     return list_export
 
 
@@ -40,12 +47,12 @@ def train_test(train_items, train_labels, test_items):
     feats_vocab = cls.get_feature_vocab(train_items, 1)
     train_feats = cls.get_features(train_items, feats_vocab, 1)
     test_feats = cls.get_features(test_items, feats_vocab, 1)
-    
-    print("FITTING MODEL...", end="")
+
+    print("FITTING MODEL...")
     cls.fit(train_feats, train_labels)
     print("OK")
-    
-    print("PREDICTING...", end="")
+
+    print("PREDICTING...")
     predicted_test_labels = cls.predict(test_feats)
     print("OK")
     
@@ -77,40 +84,42 @@ def evaluate(true_labels, predicted_labels):
 def main():
     with open("data/train.conll", "r") as file:
         raw_data = file.read()
-    
+
     with open("data/dev.conll", "r") as file:
         raw_test_data = file.read()
 
-    work_list = split_labelled(raw_data)
+    work_list = split_labelled(raw_data, 1000)
     test_list = split_labelled(raw_test_data)
 
     items = []
     labels = []
     test_items = []
     test_labels = []
-    print("ORDERING TRAIN ITEMS/LABELS...", end="")
+    print("ORDERING TRAIN ITEMS/LABELS...")
     for sent in work_list:
         for item, label in sent:
             items.append(item)
             labels.append(label)
     print("OK")
-    print("ORDERING TEST ITEMS/LABELS...", end="")
+    print("ORDERING TEST ITEMS/LABELS...")
     for sent in test_list:
         for item, label in sent:
             test_items.append(item)
             test_labels.append(label)
     print("OK")
-    
+
     items = np.array(items)
     labels = np.array(labels)
     test_items = np.array(test_items)
     test_labels = np.array(test_labels)
-    
+
     predict_labels = train_test(items, labels, test_items)
-    
+
     evaluate(test_labels, predict_labels)
-    
-    filename = "result/labels.txt"
+
+    filename = "result/labels_"
+    filename += str(time.time())
+    filename += ".txt"
     os.makedirs(os.path.dirname(filename), exist_ok=True)
     with open(filename, "w") as file:
         for item in predict_labels:

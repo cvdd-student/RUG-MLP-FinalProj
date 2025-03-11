@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import time
 import random
-import math
+from math import ceil
 
 
 def split_labelled(data, export_mode=False):
@@ -88,7 +88,7 @@ def select_and_shuffle(data, total_items=-1, flag_train_test_split=False, test_p
         data = data[:total_items]
 
     if flag_train_test_split:
-        amt_test_items = math.ceil(len(data) * (test_percentage / 100))
+        amt_test_items = ceil(len(data) * (test_percentage / 100))
         data_test = data[:amt_test_items]
         data_train = data[amt_test_items:]
 
@@ -133,8 +133,26 @@ def separate_data_labels(data, export_mode=False):
     return list_items, list_labels
 
 
+def file_select():
+    files = os.listdir("data")
+    for i in range(len(files)):
+        print("[" + str(i) + "]", end=" ")
+        print(files[i])
+
+    selected_file_index = input("Which file would you like to process? (Type only number)\n")
+    try:
+        selected_file_index = int(selected_file_index)
+    except ValueError:
+        print("Invalid selection")
+        exit()
+
+    selected_file = files[selected_file_index]
+    return "data/" + selected_file
+
+
 def collect_and_process():
-    with open("data/dev.conll", "r") as file:
+    selected_file = file_select()
+    with open(selected_file, "r") as file:
         data_dev = file.read()
     dev_list = split_labelled(data_dev)
     dev_list = destroy_sent_divide(dev_list)

@@ -1,5 +1,6 @@
 # File name: collect_and_process.py
-# Function: 
+# Function: Processes raw data (tab-separated tokens and labels)
+# in several desired ways.
 # Author: C. Van der Deen, S4092597
 # Date: 11-03-2025
 
@@ -9,6 +10,7 @@ import pandas as pd
 import time
 import random
 import math
+
 
 def split_labelled(data, export_mode=False):
     '''Splits the given data (tab separated items & labels) into
@@ -34,9 +36,9 @@ def split_labelled(data, export_mode=False):
             except IndexError:
                 list_split.append([line_export])
 
-    if export_mode == False:
+    if export_mode is False:
         return list_split
-    
+
     # Exporting the data behaviours
     print("NOTICE: Data being exported to export/split_labelled folder!")
     filename = "export/split_labelled/export_"
@@ -46,7 +48,7 @@ def split_labelled(data, export_mode=False):
     with open(filename, "w") as file:
         for line in list_split:
             file.write(str(line))
-    
+
     return list_split
 
 
@@ -57,9 +59,10 @@ def destroy_sent_divide(data, export_mode=False):
     for line in data:
         list_export += line
 
-    if export_mode == False:
+    if export_mode is False:
         return list_export
 
+    # Export behaviours
     print("NOTICE: Data being exported to export/destroy_sent_divide folder!")
     filename = "export/destroy_sent_divide/export_"
     filename += str(time.time())
@@ -74,6 +77,10 @@ def destroy_sent_divide(data, export_mode=False):
 
 
 def select_and_shuffle(data, total_items=-1, flag_train_test_split=False, test_percentage=20, flag_shuffle=False):
+    '''Able to process the provided data in several ways, all optional:
+    1. Can shuffle the data.
+    2. Can split data into training and testing sets, based on a percentage.
+    3. Can limit the total amount of items.'''
     if flag_shuffle:
         random.shuffle(data)
 
@@ -98,9 +105,10 @@ def separate_data_labels(data, export_mode=False):
         list_items.append(item)
         list_labels.append(label)
 
-    if export_mode == False:
+    if export_mode is False:
         return list_items, list_labels
 
+    # Export behaviours
     print("NOTICE: Data being exported to export/separate_data_labels folder!")
     timestamp = time.time()
 
@@ -131,7 +139,46 @@ def main():
     dev_list = split_labelled(data_dev)
     dev_list = destroy_sent_divide(dev_list)
     train_list, test_list = select_and_shuffle(dev_list, total_items=-1, flag_train_test_split=True, flag_shuffle=True)
-    train_items, train_labels = separate_data_labels(train_list, True)
+
+    train_items, train_labels = separate_data_labels(train_list)
+    test_items, test_labels = separate_data_labels(test_list)
+
+    filename_base = "processed/"
+    filename_base += str(time.time())
+    filename_base += "/"
+
+    # EXPORT THE TRAIN DATA
+
+    filename = filename_base + "items_train.txt"
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    with open(filename, "w") as file:
+        for item in train_items:
+            file.write(str(item))
+            file.write("\n")
+
+    filename = filename_base + "labels_train.txt"
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    with open(filename, "w") as file:
+        for label in train_labels:
+            file.write(str(label))
+            file.write("\n")
+
+    # EXPORT THE TEST DATA
+
+    filename = filename_base + "items_test.txt"
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    with open(filename, "w") as file:
+        for item in test_items:
+            file.write(str(item))
+            file.write("\n")
+
+    filename = filename_base + "labels_test.txt"
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    with open(filename, "w") as file:
+        for label in test_labels:
+            file.write(str(label))
+            file.write("\n")
+
 
 if __name__ == "__main__":
-	main()
+    main()

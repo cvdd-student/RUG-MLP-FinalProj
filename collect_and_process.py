@@ -1,0 +1,137 @@
+# File name: collect_and_process.py
+# Function: 
+# Author: C. Van der Deen, S4092597
+# Date: 11-03-2025
+
+import os
+import numpy as np
+import pandas as pd
+import time
+import random
+import math
+
+def split_labelled(data, export_mode=False):
+    '''Splits the given data (tab separated items & labels) into
+    a list of lists, then returns it.'''
+    list_split = []
+    pos_enum = 0
+
+    for line in data.split("\n"):
+        if line == "":
+            # An empty line is used to separate the sentences, so we
+            # can use it to jump to the next sentence.
+            pos_enum += 1
+        elif line[:11] == "# sent_enum":
+            # This needs to be this specific because of
+            # used hashtags or loose hashtags.
+            pass
+        else:
+            line_export = line.split("\t")
+            # Add to the current sentence's list
+            try:
+                list_split[pos_enum].append(line_export)
+            # If there is no list for the sentence yet
+            except IndexError:
+                list_split.append([line_export])
+
+    if export_mode == False:
+        return list_split
+    
+    # Exporting the data behaviours
+    print("NOTICE: Data being exported to export/split_labelled folder!")
+    filename = "export/split_labelled/export_"
+    filename += str(time.time())
+    filename += ".txt"
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    with open(filename, "w") as file:
+        for line in list_split:
+            file.write(str(line))
+    
+    return list_split
+
+
+def destroy_sent_divide(data, export_mode=False):
+    '''Removes the sentence division between tokens.
+    This loses data!'''
+    list_export = []
+    for line in data:
+        list_export += line
+
+    if export_mode == False:
+        return list_export
+
+    print("NOTICE: Data being exported to export/destroy_sent_divide folder!")
+    filename = "export/destroy_sent_divide/export_"
+    filename += str(time.time())
+    filename += ".txt"
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    with open(filename, "w") as file:
+        for line in list_export:
+            file.write(str(line))
+            file.write("\n")
+
+    return list_export
+
+
+def select_and_shuffle(data, total_items=-1, flag_train_test_split=False, test_percentage=20, flag_shuffle=False):
+    if flag_shuffle:
+        random.shuffle(data)
+
+    if total_items != -1:
+        data = data[:total_items]
+
+    if flag_train_test_split:
+        amt_test_items = math.ceil(len(data) * (test_percentage / 100))
+        data_test = data[:amt_test_items]
+        data_train = data[amt_test_items:]
+
+    if flag_train_test_split:
+        return data_train, data_test
+    else:
+        return data
+
+
+def separate_data_labels(data, export_mode=False):
+    list_items = []
+    list_labels = []
+    for item, label in data:
+        list_items.append(item)
+        list_labels.append(label)
+
+    if export_mode == False:
+        return list_items, list_labels
+
+    print("NOTICE: Data being exported to export/separate_data_labels folder!")
+    timestamp = time.time()
+
+    filename = "export/separate_data_labels/items_"
+    filename += str(timestamp)
+    filename += ".txt"
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    with open(filename, "w") as file:
+        for item in list_items:
+            file.write(str(item))
+            file.write("\n")
+
+    filename = "export/separate_data_labels/labels_"
+    filename += str(timestamp)
+    filename += ".txt"
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    with open(filename, "w") as file:
+        for label in list_labels:
+            file.write(str(label))
+            file.write("\n")
+
+    return list_items, list_labels
+
+
+def main():
+    with open("data/dev.conll", "r") as file:
+        data_dev = file.read()
+    dev_list = split_labelled(data_dev)
+    dev_list = destroy_sent_divide(dev_list)
+    train_list, test_list = select_and_shuffle(dev_list, total_items=-1, flag_train_test_split=True, flag_shuffle=True)
+    train_items, train_labels = separate_data_labels(train_list, True)
+
+if __name__ == "__main__":
+	main()

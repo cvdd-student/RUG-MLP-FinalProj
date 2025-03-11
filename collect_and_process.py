@@ -133,7 +133,7 @@ def separate_data_labels(data, export_mode=False):
     return list_items, list_labels
 
 
-def main():
+def collect_and_process():
     with open("data/dev.conll", "r") as file:
         data_dev = file.read()
     dev_list = split_labelled(data_dev)
@@ -181,4 +181,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    collect_and_process()

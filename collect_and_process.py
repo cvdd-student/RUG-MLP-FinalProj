@@ -99,6 +99,7 @@ def select_and_shuffle(data, total_items=-1, flag_train_test_split=False, test_p
 
 
 def separate_data_labels(data, export_mode=False):
+    '''Separates the items and labels, and exports them as separate lists.'''
     list_items = []
     list_labels = []
     for item, label in data:
@@ -134,6 +135,8 @@ def separate_data_labels(data, export_mode=False):
 
 
 def file_select():
+    '''Displays the files in the data folder,
+    and returns the file chosen.'''
     files = os.listdir("data")
     for i in range(len(files)):
         print("[" + str(i) + "]", end=" ")
@@ -150,53 +153,45 @@ def file_select():
     return "data/" + selected_file
 
 
-def collect_and_process():
+def get_data():
+    '''Gets a file from file_select() and returns it as read data.'''
     selected_file = file_select()
     with open(selected_file, "r") as file:
-        data_dev = file.read()
-    dev_list = split_labelled(data_dev)
-    dev_list = destroy_sent_divide(dev_list)
-    train_list, test_list = select_and_shuffle(dev_list, total_items=-1, flag_train_test_split=True, flag_shuffle=True)
+        data = file.read()
+    return data
+
+
+def export_processed_data(data, name, timestamp):
+    '''Exports the provided data with the provided name and timestamp.'''
+    filename = "processed/"
+    filename += str(timestamp)
+    filename += "/"
+    filename += name
+    filename += ".txt"
+    
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    with open(filename, "w") as file:
+        for line in data:
+            file.write(str(line))
+            file.write("\n")
+
+
+def collect_and_process(data):
+    data_list = split_labelled(data)
+    data_list = destroy_sent_divide(data_list)
+    train_list, test_list = select_and_shuffle(data_list, total_items=-1, flag_train_test_split=True, flag_shuffle=True)
 
     train_items, train_labels = separate_data_labels(train_list)
     test_items, test_labels = separate_data_labels(test_list)
 
-    filename_base = "processed/"
-    filename_base += str(time.time())
-    filename_base += "/"
-
-    # EXPORT THE TRAIN DATA
-
-    filename = filename_base + "items_train.txt"
-    os.makedirs(os.path.dirname(filename), exist_ok=True)
-    with open(filename, "w") as file:
-        for item in train_items:
-            file.write(str(item))
-            file.write("\n")
-
-    filename = filename_base + "labels_train.txt"
-    os.makedirs(os.path.dirname(filename), exist_ok=True)
-    with open(filename, "w") as file:
-        for label in train_labels:
-            file.write(str(label))
-            file.write("\n")
-
-    # EXPORT THE TEST DATA
-
-    filename = filename_base + "items_test.txt"
-    os.makedirs(os.path.dirname(filename), exist_ok=True)
-    with open(filename, "w") as file:
-        for item in test_items:
-            file.write(str(item))
-            file.write("\n")
-
-    filename = filename_base + "labels_test.txt"
-    os.makedirs(os.path.dirname(filename), exist_ok=True)
-    with open(filename, "w") as file:
-        for label in test_labels:
-            file.write(str(label))
-            file.write("\n")
+    return train_items, train_labels, test_items, test_labels
 
 
 if __name__ == "__main__":
-    collect_and_process()
+    data = get_data()
+    tr_items, tr_labels, te_items, te_labels = collect_and_process(data)
+    timestamp = time.time()
+    export_processed_data(tr_items, "train_items", timestamp)
+    export_processed_data(tr_labels, "train_labels", timestamp)
+    export_processed_data(te_items, "test_items", timestamp)
+    export_processed_data(te_labels, "test_labels", timestamp)

@@ -139,8 +139,10 @@ def file_select():
     and returns the file chosen.'''
     files = os.listdir("data")
     for i in range(len(files)):
-        print("[" + str(i) + "]", end=" ")
-        print(files[i])
+        filepath = "data/" + files[i]
+        if os.path.isfile(filepath):
+            print("[" + str(i) + "]", end=" ")
+            print(files[i])
 
     selected_file_index = input("Which file would you like to process? (Type only number)\n")
     try:

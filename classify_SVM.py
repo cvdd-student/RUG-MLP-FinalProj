@@ -1,6 +1,8 @@
 import collect_and_process
 from sklearn_svm_classifier import SVMClassifier
 from sklearn import metrics
+import time
+import os
 
 
 def evaluate(true_labels, predicted_labels):
@@ -23,6 +25,17 @@ def evaluate(true_labels, predicted_labels):
     print("Recall: " + str(recall))
     print("F1: " + str(f1score))
     print("\nConfusion matrix:\n" + str(confusion_matrix))
+
+    # Exporting the data behaviours
+    print("NOTICE: Data being exported to export/eval folder!")
+    filename = "export/eval/export_"
+    filename += str(time.time())
+    filename += ".txt"
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    with open(filename, "w") as file:
+        for line in predicted_labels:
+            file.write(str(line))
+            file.write("\n")
 
 
 def train_cls(train_items, train_labels, test_items):

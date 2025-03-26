@@ -10,6 +10,7 @@ import pandas as pd
 import time
 import random
 from math import ceil
+import nltk
 
 
 def split_labelled(data, export_mode=False):
@@ -180,6 +181,11 @@ def export_processed_data(data, name, timestamp):
 
 def collect_and_process(data):
     data_list = split_labelled(data)
+    #for line in data_list:
+    #    sent = []
+    #    for item in line:
+    #        sent.append(item[0])
+
     data_list = destroy_sent_divide(data_list)
     train_list, test_list = select_and_shuffle(data_list, total_items=-1, flag_train_test_split=True, flag_shuffle=True)
 

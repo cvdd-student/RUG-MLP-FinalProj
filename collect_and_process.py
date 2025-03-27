@@ -53,30 +53,6 @@ def split_labelled(data, export_mode=False):
     return list_split
 
 
-def destroy_sent_divide(data, export_mode=False):
-    '''Removes the sentence division between tokens.
-    This loses data!'''
-    list_export = []
-    for line in data:
-        list_export += line
-
-    if export_mode is False:
-        return list_export
-
-    # Export behaviours
-    print("NOTICE: Data being exported to export/destroy_sent_divide folder!")
-    filename = "export/destroy_sent_divide/export_"
-    filename += str(time.time())
-    filename += ".txt"
-    os.makedirs(os.path.dirname(filename), exist_ok=True)
-    with open(filename, "w") as file:
-        for line in list_export:
-            file.write(str(line))
-            file.write("\n")
-
-    return list_export
-
-
 def select_and_shuffle(data, total_items=-1, flag_train_test_split=False, test_percentage=20, flag_shuffle=False):
     '''Able to process the provided data in several ways, all optional:
     1. Can shuffle the data.
@@ -103,8 +79,8 @@ def separate_data_labels(data, export_mode=False):
     '''Separates the items and labels, and exports them as separate lists.'''
     list_items = []
     list_labels = []
-    for item, label in data:
-        list_items.append(item)
+    for item, pos, ne, label in data:
+        list_items.append([item, pos, ne])
         list_labels.append(label)
 
     if export_mode is False:
@@ -171,7 +147,7 @@ def export_processed_data(data, name, timestamp):
     filename += "/"
     filename += name
     filename += ".txt"
-    
+
     os.makedirs(os.path.dirname(filename), exist_ok=True)
     with open(filename, "w") as file:
         for line in data:
@@ -179,15 +155,61 @@ def export_processed_data(data, name, timestamp):
             file.write("\n")
 
 
+def add_pos_ne_presence(data):
+    '''Adds POS tags and NE tags (if applicable) to the data.
+    Destroys sentence division in the process, losing data.
+    If no NE tag is found, "False" is appended instead.'''
+    sents_items = []    # Stores the sentence as items, and later tags
+    sents_labels = []   # Stores just the sentence as labels
+
+    # Separate the items and labels in the base data
+    for line in data:
+        line_sent_items = []
+        line_sent_labels = []
+        for item, label in line:
+            line_sent_items.append(item)
+            line_sent_labels.append(label)
+        sents_items.append(line_sent_items)
+        sents_labels.append(line_sent_labels)
+
+    # Do POS and NE tagging
+    sents_items = nltk.pos_tag_sents(sents_items)
+    sents_items = list(nltk.ne_chunk_sents(sents_items))
+
+    # Reorganise the created data into the following structure:
+    # [ITEM, POS, NE, LABEL]
+    list_export = []
+    for i in range(len(sents_labels)):
+        for item, label in zip(sents_items[i], sents_labels[i]):
+            export_item = []
+            try:
+                if item.label():
+                    # This needs to be done like this, because NER causes
+                    # the label to be one of the leaves.
+                    # Position 0 in this case refers to the item itself
+                    # (specifically the tuple with the item and POS).
+                    export_item.append(item[0][0])
+                    export_item.append(item[0][1])
+                    export_item.append(item.label())
+            except AttributeError:
+                # An AttributeError would mean that the NE label
+                # does not exist, the first indexing argument is not necessary.
+                export_item.append(item[0])
+                export_item.append(item[1])
+                export_item.append(False)
+            export_item.append(label)
+            list_export.append(export_item)
+
+    return list_export
+
+
 def collect_and_process(data):
     data_list = split_labelled(data)
-    #for line in data_list:
-    #    sent = []
-    #    for item in line:
-    #        sent.append(item[0])
 
-    data_list = destroy_sent_divide(data_list)
-    train_list, test_list = select_and_shuffle(data_list, total_items=-1, flag_train_test_split=True, flag_shuffle=True)
+    data_process = add_pos_ne_presence(data_list)
+
+    # data_list = destroy_sent_divide(data_list)
+    train_list, test_list = select_and_shuffle(data_process, total_items=-1, flag_train_test_split=True, flag_shuffle=True)
 
     train_items, train_labels = separate_data_labels(train_list)
     test_items, test_labels = separate_data_labels(test_list)

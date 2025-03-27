@@ -9,16 +9,19 @@ import os
 def get_ne_tags(items):
 	ne_detections = []
 	for word in items:
-		if word[0] == "@" or word[0] == "#":
+		word_tokenized = nltk.word_tokenize(word)
+		word_pos = nltk.pos_tag(word_tokenized)
+		word_ne = nltk.ne_chunk(word_pos)
+		try:
+			if word_ne[0].label():
+				ne_detections.append(True)
+		except AttributeError:
 			ne_detections.append(False)
-		else:
-			word_ne = nltk.ne_chunk([(word, "NN")])
-			try:
-				if word_ne[0].label():
-					ne_detections.append(True)
-					print("NE found: " + word)
-			except AttributeError:
-				ne_detections.append(False)
+
+	#output = nltk.word_tokenize(word)
+	#output = nltk.pos_tag(output)
+	#output = nltk.ne_chunk(output)
+	#print(output[0].label())
 	
 	# Exporting the data behaviours
 	print("NOTICE: Data being exported to export/ne folder!")

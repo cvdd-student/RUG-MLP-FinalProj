@@ -49,9 +49,19 @@ def train_cls(train_items, train_labels, test_items):
 
     return cls, test_feats
 
+
 def main():
     data = collect_and_process.get_data()
-    tr_items, tr_labels, te_items, te_labels = collect_and_process.collect_and_process(data)
+    tr_items_long, tr_labels, te_items_long, te_labels = collect_and_process.collect_and_process(data)
+    tr_items = []
+    te_items = []
+
+    # Temporary bodge
+    for list_feats in tr_items_long:
+        tr_items.append(list_feats[0])
+    for list_feats in te_items_long:
+        te_items.append(list_feats[0])
+
     cls, te_feats = train_cls(tr_items, tr_labels, te_items)
     pred_labels = cls.predict(te_feats)
     evaluate(te_labels, pred_labels)

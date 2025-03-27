@@ -158,7 +158,7 @@ def export_processed_data(data, name, timestamp):
 def add_pos_ne_presence(data):
     '''Adds POS tags and NE tags (if applicable) to the data.
     Destroys sentence division in the process, losing data.
-    If no NE tag is found, "False" is appended instead.'''
+    If no NE tag is found, "False" is appended instead, otherwise "True"'''
     sents_items = []    # Stores the sentence as items, and later tags
     sents_labels = []   # Stores just the sentence as labels
 
@@ -190,7 +190,7 @@ def add_pos_ne_presence(data):
                     # (specifically the tuple with the item and POS).
                     export_item.append(item[0][0])
                     export_item.append(item[0][1])
-                    export_item.append(item.label())
+                    export_item.append(True)
             except AttributeError:
                 # An AttributeError would mean that the NE label
                 # does not exist, the first indexing argument is not necessary.

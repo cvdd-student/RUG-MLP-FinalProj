@@ -1,9 +1,10 @@
 import collect_and_process
-from sklearn_svm_classifier import SVMClassifier
+from sklearn import svm
 from sklearn import metrics
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 import time
 import os
-
+import numpy as np
 
 def evaluate(true_labels, predicted_labels):
     """
@@ -39,12 +40,21 @@ def evaluate(true_labels, predicted_labels):
 
 
 def train_cls(train_items, train_labels, test_items):
-    cls = SVMClassifier(kernel='linear')
-    feats_vocab = cls.get_feature_vocab(train_items, 1)
-    train_feats = cls.get_features(train_items, feats_vocab, 1)
-    test_feats = cls.get_features(test_items, feats_vocab, 1)
+    train_words = []
+    for line in train_items:
+        train_words.append(line[0])
+
+    test_words = []
+    for line in train_items:
+        test_words.append(line[0])
+        
+    get_features_vocab(train_words)
+    exit()
+        
+    cls = svm.SVC(decision_function_shape='ovo')
+
     print("Training model...")
-    cls.fit(train_feats, train_labels)
+    cls.fit(train_items, train_labels)
     print("OK")
 
     return cls, test_feats
@@ -52,16 +62,7 @@ def train_cls(train_items, train_labels, test_items):
 
 def main():
     data = collect_and_process.get_data()
-    tr_items_long, tr_labels, te_items_long, te_labels = collect_and_process.collect_and_process(data)
-    tr_items = []
-    te_items = []
-
-    # Temporary bodge
-    for list_feats in tr_items_long:
-        tr_items.append(list_feats[0])
-    for list_feats in te_items_long:
-        te_items.append(list_feats[0])
-
+    tr_items, tr_labels, te_items, te_labels = collect_and_process.collect_and_process(data)
     cls, te_feats = train_cls(tr_items, tr_labels, te_items)
     pred_labels = cls.predict(te_feats)
     evaluate(te_labels, pred_labels)

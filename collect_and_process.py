@@ -189,14 +189,14 @@ def add_pos_ne_presence(data):
                     # Position 0 in this case refers to the item itself
                     # (specifically the tuple with the item and POS).
                     export_item.append(item[0][0])
-                    export_item.append(item[0][1])
-                    export_item.append(True)
+                    export_item.append("<" + item[0][1] + ">")
+                    export_item.append("<NE_TRUE>")
             except AttributeError:
                 # An AttributeError would mean that the NE label
                 # does not exist, the first indexing argument is not necessary.
                 export_item.append(item[0])
                 export_item.append(item[1])
-                export_item.append(False)
+                export_item.append("<NE_FALSE>")
             export_item.append(label)
             list_export.append(export_item)
 

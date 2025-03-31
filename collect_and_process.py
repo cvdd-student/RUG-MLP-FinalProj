@@ -1,7 +1,7 @@
 # File name: collect_and_process.py
 # Function: Processes raw data (tab-separated tokens and labels)
 # in several desired ways.
-# Author: C. Van der Deen, S4092597
+# Authors: C. Van der Deen, S4092597
 # Date: 11-03-2025
 
 import os

@@ -1,3 +1,7 @@
+# File name: DICTengspaAPI.py
+# Authors: D. de Haan, S6186408
+# Date: 20-03-2025
+
 import requests
 
 ENGLISH_API_KEY = "de514aa6-86c0-421d-a5d1-3ffe1cd9f83e"  # API key english

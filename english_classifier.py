@@ -1,3 +1,7 @@
+# File name: english_classifier.py
+# Authors: D. de Haan, S6186408
+# Date: 27-03-2025
+
 import requests
 import os
 from apikey import ENGLISH_API_KEY

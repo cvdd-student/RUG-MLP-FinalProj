@@ -1,3 +1,7 @@
+# File name: DICTengspaAPI.py
+# Author: D. de Haan, S6186408
+# Date: 24-03-2025
+
 import requests
 import os
 from apikey import SPANISH_API_KEY

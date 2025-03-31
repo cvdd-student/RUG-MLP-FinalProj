@@ -11,6 +11,8 @@ import time
 import random
 from math import ceil
 import nltk
+from english_classifier import classify as classify_english
+from spanish_classifier import classify as classify_spanish
 
 
 def split_labelled(data, export_mode=False):
@@ -79,9 +81,9 @@ def separate_data_labels(data, export_mode=False):
     '''Separates the items and labels, and exports them as separate lists.'''
     list_items = []
     list_labels = []
-    for item, pos, ne, label in data:
+    for item, pos, ne, label,lang_label in data:
         list_items.append([item, pos, ne])
-        list_labels.append(label)
+        list_labels.append([label,lang_label])
 
     if export_mode is False:
         return list_items, list_labels
@@ -208,6 +210,12 @@ def collect_and_process(data):
 
     data_process = add_pos_ne_presence(data_list)
 
+    # Run language classification on each token
+    for row in data_process:
+        token = row[0]
+        lang_label = classify_english(token) or classify_spanish(token) or "unknown"
+        row.append(lang_label)
+
     # data_list = destroy_sent_divide(data_list)
     train_list, test_list = select_and_shuffle(data_process, total_items=-1, flag_train_test_split=True, flag_shuffle=True)
 
@@ -225,3 +233,4 @@ if __name__ == "__main__":
     export_processed_data(tr_labels, "train_labels", timestamp)
     export_processed_data(te_items, "test_items", timestamp)
     export_processed_data(te_labels, "test_labels", timestamp)
+    print("\n Ready find the files in folder processed")

@@ -19,23 +19,29 @@ def is_spanish(word):
         es_response = requests.get(es_url, timeout=5)
 
         if es_response.status_code != 200:
-            print(f"False: status {es_response.status_code} for word '{word}'")
+            # only uncomment to see the results of the api call
+            #print(f"False: status {es_response.status_code} for word '{word}'")
             return False
 
         es_data = es_response.json()
 
-        print(f"\n Check: {word}")
-        print(f"Answer: {es_data if len(es_data) > 0 else 'No result'}")
+        # # only uncomment to see the results of the word search and the answe
+        #print(f"\n Check: {word}")
+        #print(f"Answer: {es_data if len(es_data) > 0 else 'No result'}")
 
         return isinstance(es_data, list) and len(es_data) > 0 and isinstance(es_data[0], dict)
 
     except requests.exceptions.RequestException as e:
-        print(f"Connection error'{word}': {e}")
+        # only uncomment to see the results of connection error
+        #print(f"Connection error'{word}': {e}")
+
         return False
     except ValueError:
-        print(f"JSON decode fault for '{word}'. possibly no valid response.")
+        # only uncomment to see the results of json error
+        #print(f"JSON decode fault for '{word}'. possibly no valid response.")
         return False
 
+# print the results to an other file
 def classify_conll_file(input_path, output_path):
     seen = {}  # cache to avoid double api's
     with open(input_path, "r", encoding="utf-8") as infile, open(output_path, "w", encoding="utf-8") as outfile:
@@ -51,13 +57,20 @@ def classify_conll_file(input_path, output_path):
             if token not in seen:
                 seen[token] = is_spanish(token)
             
-            label = "True" if seen[token] else "False"
+            label = "lang2" if seen[token] else None
             outfile.write(f"{token}\t{label}\n")
+
+def classify(word):
+    word = clean_token(word)
+    return "lang2" if is_spanish(word) else None
 
 if __name__ == "__main__":
     input_file = os.path.join("data", "test.conll")
     output_file = os.path.join("data", "test_classified.conll")
     
     print("Busy classifying tokens from test.conll...")
-    classify_conll_file(input_file, output_file)
-    print(f"\n Ready {output_file}")
+
+    # only uncomment when wanting to see if want the output 
+    # to go to an external file, and see when ready
+    #classify_conll_file(input_file, output_file)
+    #print(f"\n Ready {output_file}")

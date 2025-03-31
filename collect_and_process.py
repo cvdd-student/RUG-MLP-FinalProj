@@ -11,6 +11,7 @@ import time
 import random
 from math import ceil
 import nltk
+from concurrent.futures import ThreadPoolExecutor
 from english_classifier import classify as classify_english
 from spanish_classifier import classify as classify_spanish
 
@@ -205,16 +206,23 @@ def add_pos_ne_presence(data):
     return list_export
 
 
+def classify_parallel(data):
+    def classify_word(row):
+        token = row[0]
+        lang_label = classify_english(token) or classify_spanish(token) or "unknown"
+        return row + [lang_label]
+
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        return list(executor.map(classify_word, data))
+
+
 def collect_and_process(data):
     data_list = split_labelled(data)
 
     data_process = add_pos_ne_presence(data_list)
 
     # Run language classification on each token
-    for row in data_process:
-        token = row[0]
-        lang_label = classify_english(token) or classify_spanish(token) or "unknown"
-        row.append(lang_label)
+    data_process = classify_parallel(data_process)
 
     # data_list = destroy_sent_divide(data_list)
     train_list, test_list = select_and_shuffle(data_process, total_items=-1, flag_train_test_split=True, flag_shuffle=True)
@@ -229,6 +237,7 @@ if __name__ == "__main__":
     data = get_data()
     tr_items, tr_labels, te_items, te_labels = collect_and_process(data)
     timestamp = time.time()
+    print("Elapsed:", time.time() - start, "seconds")
     export_processed_data(tr_items, "train_items", timestamp)
     export_processed_data(tr_labels, "train_labels", timestamp)
     export_processed_data(te_items, "test_items", timestamp)

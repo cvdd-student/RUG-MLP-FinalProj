@@ -7,6 +7,8 @@ import os
 from apikey import ENGLISH_API_KEY
 import re
 
+seen = {}  # cache to avoid double api's
+
 def clean_token(token):
     """delete reading signs, 
     and convert to lowercase to make it easy to proces"""
@@ -46,7 +48,6 @@ def is_english(word):
 
 # print the results to an other file
 def classify_conll_file(input_path, output_path):
-    seen = {}  # cache to avoid double api's
     with open(input_path, "r", encoding="utf-8") as infile, open(output_path, "w", encoding="utf-8") as outfile:
         for line in infile:
             stripped = line.strip()
@@ -65,8 +66,11 @@ def classify_conll_file(input_path, output_path):
 
 def classify(word):
     word = clean_token(word)
-    return "lang1" if is_english(word) else None
-
+    if word in seen:
+        return seen[word]
+    result = "lang1" if is_english(word) else None  # (or "lang2" for Spanish)
+    seen[word] = result
+    return result
 
 if __name__ == "__main__":
     input_file = os.path.join("data", "test.conll")

@@ -6,8 +6,17 @@ import requests
 import os
 from apikey import SPANISH_API_KEY
 import re
+import atexit
+import json
 
-seen = {}  # cache to avoid double api's
+
+# cache to avoid double api calls
+CACHE_FILE = "spa_seen.json"
+try:
+    with open(CACHE_FILE, "r") as f:
+        seen = json.load(f)
+except FileNotFoundError:
+    seen = {}
 
 def clean_token(token):
     """delete reading signs, 
@@ -73,11 +82,17 @@ def classify(word):
     seen[word] = result
     return result
 
+# write cache to an other file to make it faster
+@atexit.register
+def save_cache():
+    with open(CACHE_FILE, "w") as f:
+        json.dump(seen, f)
+    print(f"[{__name__}] Saved {len(seen)} words to cache.")
 
 if __name__ == "__main__":
     input_file = os.path.join("data", "test.conll")
     output_file = os.path.join("data", "test_classified.conll")
-    
+
     print("Busy classifying tokens from test.conll...")
 
     # only uncomment when wanting to see if want the output 

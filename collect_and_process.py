@@ -15,6 +15,8 @@ from concurrent.futures import ThreadPoolExecutor
 from english_classifier import classify as classify_english
 from spanish_classifier import classify as classify_spanish
 
+# global variable
+start = time.time()  # Zet dit ergens bovenaan waar je het meten van tijd wilt starten
 
 def split_labelled(data, export_mode=False):
     '''Splits the given data (tab separated items & labels) into

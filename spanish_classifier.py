@@ -1,4 +1,4 @@
-# File name: DICTengspaAPI.py
+# File name: spanish_classifier.py
 # Author: D. de Haan, S6186408
 # Date: 24-03-2025
 

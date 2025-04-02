@@ -3,5 +3,3 @@ data
 export
 processed
 apikey.py
-eng_seen.json
-spa_seen.json

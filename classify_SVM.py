@@ -108,7 +108,7 @@ def train_cls(train_feats, train_labels, test_feats):
 def main():
     data = collect_and_process.get_data()
     tr_items, tr_labels, te_items, te_labels = collect_and_process.collect_and_process(data)
-
+    
     tr_feats, te_feats = convert_data_to_features(tr_items, te_items)
 
     cls = train_cls(tr_feats, tr_labels, te_feats)

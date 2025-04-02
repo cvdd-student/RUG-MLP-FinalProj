@@ -22,6 +22,10 @@ def main():
     print("PROGRESS: Adding POS & NE presence")
     train_process = collect_and_process.add_pos_ne_presence(train_data_list)
     test_process = collect_and_process.add_pos_ne_presence(test_data_list)
+    
+    print("PROGRESS: Doing dictionary lookup")
+    train_process = collect_and_process.classify_parallel(train_process)
+    test_process = collect_and_process.classify_parallel(test_process)
 
     print("PROGRESS: Separating data & labels")
     train_items, train_labels = collect_and_process.separate_data_labels(train_process)

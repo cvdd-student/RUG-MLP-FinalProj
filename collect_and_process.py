@@ -18,9 +18,13 @@ from spanish_classifier import classify as classify_spanish
 # global variable
 start = time.time()  # Zet dit ergens bovenaan waar je het meten van tijd wilt starten
 
+
 def split_labelled(data, export_mode=False):
-    '''Splits the given data (tab separated items & labels) into
-    a list of lists, then returns it.'''
+    """
+    Splits the given data (tab separated items & labels) into
+    a list of lists, then returns it.
+    Input: data (from collect_and_process)
+    """
     list_split = []
     pos_enum = 0
 
@@ -59,10 +63,13 @@ def split_labelled(data, export_mode=False):
 
 
 def select_and_shuffle(data, total_items=-1, flag_train_test_split=False, test_percentage=20, flag_shuffle=False):
-    '''Able to process the provided data in several ways, all optional:
+    """
+    Able to process the provided data in several ways, all optional:
     1. Can shuffle the data.
     2. Can split data into training and testing sets, based on a percentage.
-    3. Can limit the total amount of items.'''
+    3. Can limit the total amount of items.
+    Input: data (from collect_and_process)
+    """
     if flag_shuffle:
         random.shuffle(data)
 
@@ -74,6 +81,7 @@ def select_and_shuffle(data, total_items=-1, flag_train_test_split=False, test_p
         data_test = data[:amt_test_items]
         data_train = data[amt_test_items:]
 
+    # Return split data if requested, else pass full dataset
     if flag_train_test_split:
         return data_train, data_test
     else:
@@ -81,12 +89,15 @@ def select_and_shuffle(data, total_items=-1, flag_train_test_split=False, test_p
 
 
 def separate_data_labels(data, export_mode=False):
-    '''Separates the items and labels, and exports them as separate lists.'''
+    """
+    Separates the items and labels, and exports them as separate lists.
+    Input: data (from collect_and_process)
+    """
     list_items = []
     list_labels = []
     for item, pos, ne, label,lang_label in data:
-        list_items.append([item, pos, ne, lang_label])
-        list_labels.append([label])
+        list_items.append([item, pos, ne])
+        list_labels.append([label,lang_label])
 
     if export_mode is False:
         return list_items, list_labels
@@ -117,8 +128,11 @@ def separate_data_labels(data, export_mode=False):
 
 
 def file_select():
-    '''Displays the files in the data folder,
-    and returns the file chosen.'''
+    """
+    Displays the files in the data folder,
+    and returns the file chosen.
+    Input: None
+    """
     files = os.listdir("data")
     for i in range(len(files)):
         filepath = "data/" + files[i]
@@ -138,7 +152,10 @@ def file_select():
 
 
 def get_data():
-    '''Gets a file from file_select() and returns it as read data.'''
+    """
+    Gets a file from file_select() and returns it as read data.
+    Input: None
+    """
     selected_file = file_select()
     with open(selected_file, "r") as file:
         data = file.read()
@@ -146,7 +163,10 @@ def get_data():
 
 
 def export_processed_data(data, name, timestamp):
-    '''Exports the provided data with the provided name and timestamp.'''
+    """
+    Exports the provided data with the provided name and timestamp.
+    Input: data (from main), name (string), timestamp (from import time.time)
+    """
     filename = "processed/"
     filename += str(timestamp)
     filename += "/"
@@ -161,9 +181,12 @@ def export_processed_data(data, name, timestamp):
 
 
 def add_pos_ne_presence(data):
-    '''Adds POS tags and NE tags (if applicable) to the data.
+    """
+    Adds POS tags and NE tags (if applicable) to the data.
     Destroys sentence division in the process, losing data.
-    If no NE tag is found, "False" is appended instead, otherwise "True"'''
+    If no NE tag is found, "False" is appended instead, otherwise "True"
+    Input: data (from collect_and_process)
+    """
     sents_items = []    # Stores the sentence as items, and later tags
     sents_labels = []   # Stores just the sentence as labels
 
@@ -200,7 +223,7 @@ def add_pos_ne_presence(data):
                 # An AttributeError would mean that the NE label
                 # does not exist, the first indexing argument is not necessary.
                 export_item.append(item[0])
-                export_item.append("<" + item[1] + ">")
+                export_item.append(item[1])
                 export_item.append("<NE_FALSE>")
             export_item.append(label)
             list_export.append(export_item)
@@ -209,18 +232,26 @@ def add_pos_ne_presence(data):
 
 
 def classify_parallel(data):
+    """
+    Labels data according to imported language classifers.
+    Supports Spanish and English, else 'unknown'.
+    Input: data (from collect_and_process)
+    """
     def classify_word(row):
         token = row[0]
         lang_label = classify_english(token) or classify_spanish(token) or "unknown"
-        row + ["<" + lang_label.upper() + ">"]
-        
-        return row + ["<" + lang_label.upper() + ">"]
+        return row + [lang_label]
 
     with ThreadPoolExecutor(max_workers=10) as executor:
         return list(executor.map(classify_word, data))
 
 
 def collect_and_process(data):
+    """
+    Primary function of this file (Besides export_processed_data)
+    Calls subfunctions and returns items + labels.
+    Input: data (.conll as read by get_data)
+    """
     data_list = split_labelled(data)
 
     data_process = add_pos_ne_presence(data_list)
@@ -229,11 +260,7 @@ def collect_and_process(data):
     data_process = classify_parallel(data_process)
 
     # data_list = destroy_sent_divide(data_list)
-    SaS_items = int(input("Amount of items to process? (Only int, -1 for all data)"))
-    
-    train_list, test_list = select_and_shuffle(data_process, total_items=SaS_items, flag_train_test_split=True, flag_shuffle=True)
-    
-    print(len(train_list))
+    train_list, test_list = select_and_shuffle(data_process, total_items=-1, flag_train_test_split=True, flag_shuffle=True)
 
     train_items, train_labels = separate_data_labels(train_list)
     test_items, test_labels = separate_data_labels(test_list)

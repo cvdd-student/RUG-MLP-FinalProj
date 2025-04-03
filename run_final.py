@@ -2,8 +2,8 @@
 # Function: Runs the pre-processing and SVM classifier
 # for the final results. WARNING: This uses ALL the data we
 # have, so it will take a while to run!
-# Authors: C. Van der Deen, S4092597
-# Date: 31-03-2025
+# Authors: C. Van der Deen
+# Date: 03-03-2025
 
 import collect_and_process
 import classify_SVM

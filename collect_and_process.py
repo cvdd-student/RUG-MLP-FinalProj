@@ -1,8 +1,10 @@
 # File name: collect_and_process.py
-# Function: Processes raw data (tab-separated tokens and labels)
-# in several desired ways.
-# Authors: C. Van der Deen, S4092597
-# Date: 11-03-2025
+# Function: Contains various functions used
+# for the collecting and processing of labelled data (.conll files).
+# If run independently, will split the chosen dataset (from the /data folder)
+# into four files (train items/labels and test items/labels).
+# Authors: C. Van der Deen; D. De Haan
+# Date: 03-04-2025
 
 import os
 import numpy as np
@@ -19,11 +21,16 @@ from spanish_classifier import classify as classify_spanish
 start = time.time()  # Zet dit ergens bovenaan waar je het meten van tijd wilt starten
 
 
-def split_labelled(data, export_mode=False):
+def split_labelled(data):
     """
     Splits the given data (tab separated items & labels) into
     a list of lists, then returns it.
-    Input: data (from collect_and_process)
+    The input data is structured as follows:
+    - 1 token and 1 label per line (tab separated)
+    - Tokens belonging to the same sentence are together in a paragraph,
+    the sentences are separated by an empty line.
+    - Optionally, a sentence enumerator can be added (marked with
+    "# sent_enum") but we do not make use of this.
     """
     list_split = []
     pos_enum = 0
@@ -45,19 +52,6 @@ def split_labelled(data, export_mode=False):
             # If there is no list for the sentence yet
             except IndexError:
                 list_split.append([line_export])
-
-    if export_mode is False:
-        return list_split
-
-    # Exporting the data behaviours
-    print("NOTICE: Data being exported to export/split_labelled folder!")
-    filename = "export/split_labelled/export_"
-    filename += str(time.time())
-    filename += ".txt"
-    os.makedirs(os.path.dirname(filename), exist_ok=True)
-    with open(filename, "w") as file:
-        for line in list_split:
-            file.write(str(line))
 
     return list_split
 
@@ -88,41 +82,18 @@ def select_and_shuffle(data, total_items=-1, flag_train_test_split=False, test_p
         return data
 
 
-def separate_data_labels(data, export_mode=False):
+def separate_data_labels(data):
     """
-    Separates the items and labels, and exports them as separate lists.
-    Input: data (from collect_and_process)
+    Takes a list of items with their info and labels (together also in a list)
+    and separates the items and labels into their own separate lists.
+    Input structure: [[token, POS, NE, label, lang_label]]
+    Output structure: [token, POS, NE, lang_label] & [label]
     """
     list_items = []
     list_labels = []
     for item, pos, ne, label,lang_label in data:
-        list_items.append([item, pos, ne])
-        list_labels.append([label,lang_label])
-
-    if export_mode is False:
-        return list_items, list_labels
-
-    # Export behaviours
-    print("NOTICE: Data being exported to export/separate_data_labels folder!")
-    timestamp = time.time()
-
-    filename = "export/separate_data_labels/items_"
-    filename += str(timestamp)
-    filename += ".txt"
-    os.makedirs(os.path.dirname(filename), exist_ok=True)
-    with open(filename, "w") as file:
-        for item in list_items:
-            file.write(str(item))
-            file.write("\n")
-
-    filename = "export/separate_data_labels/labels_"
-    filename += str(timestamp)
-    filename += ".txt"
-    os.makedirs(os.path.dirname(filename), exist_ok=True)
-    with open(filename, "w") as file:
-        for label in list_labels:
-            file.write(str(label))
-            file.write("\n")
+        list_items.append([item, pos, ne, lang_label])
+        list_labels.append(label)
 
     return list_items, list_labels
 
@@ -131,7 +102,6 @@ def file_select():
     """
     Displays the files in the data folder,
     and returns the file chosen.
-    Input: None
     """
     files = os.listdir("data")
     for i in range(len(files)):
@@ -184,8 +154,7 @@ def add_pos_ne_presence(data):
     """
     Adds POS tags and NE tags (if applicable) to the data.
     Destroys sentence division in the process, losing data.
-    If no NE tag is found, "False" is appended instead, otherwise "True"
-    Input: data (from collect_and_process)
+    If no NE tag is found, <NE_FALSE> is appended instead, otherwise <NE_TRUE>
     """
     sents_items = []    # Stores the sentence as items, and later tags
     sents_labels = []   # Stores just the sentence as labels
@@ -223,7 +192,7 @@ def add_pos_ne_presence(data):
                 # An AttributeError would mean that the NE label
                 # does not exist, the first indexing argument is not necessary.
                 export_item.append(item[0])
-                export_item.append(item[1])
+                export_item.append("<" + item[1] + ">")
                 export_item.append("<NE_FALSE>")
             export_item.append(label)
             list_export.append(export_item)
@@ -240,7 +209,7 @@ def classify_parallel(data):
     def classify_word(row):
         token = row[0]
         lang_label = classify_english(token) or classify_spanish(token) or "unknown"
-        return row + [lang_label]
+        return row + ["<" + lang_label.upper() + ">"]
 
     with ThreadPoolExecutor(max_workers=10) as executor:
         return list(executor.map(classify_word, data))

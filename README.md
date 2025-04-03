@@ -1,26 +1,26 @@
-# Machine Learning Project: Final Project
-### Cody van der Deen, S4092597
+# Machine Learning Project [Group 6]: Final Project
+#### Cody van der Deen, Dies de Haan, Isa Houtsma, Jasper Wieten
 
-Currently, this only holds previous assignment code and a toy SVM classifier. This was simple entertainment, combined with a (hopefully) working import and export behaviours.
+This repository contains all code used and created for the 2025 MLP Final Project.
 
-### Dies de Haan, 
+## Requirements
+- Numpy
+- Pandas
+- NLTK
+- Scikit-learn
+- matplotlib
 
-To start ask an api key and register from this website below
+## Usage
+First and foremost, all data files (in this case, these should always be .conll files) must be stored in a folder named "data" (not tracked in this repository).
+To run for the final results, as documented in the paper, only **run_final.py** should be used. However, classify_SVM.py and collect_and_process.py can also be run independently.
+These will run the classifier on a single file or split the data and output it to different files, respectively.
 
-1 go to this website 
-https://dictionaryapi.com/register/index
+## Getting your API keys for dictionary lookup
+To start, you must obtain Merriam-Webster API keys. These can be obtained by registering for a developer account:
 
-2. fill in your credentials
-3. when you reach the checkbox Request API Key (1) and Request API Key (2) 
-
-for Request API Key (1)
-fill in collegiate Dictionary for english
-
-for Request API Key (2)
-fill in Spanish-English Dictionary for spanish
-
-4. confirm your email adres
-5. log into your account
-6. Go to your keys
-7. read your keys and copy them
-8. put it in a file named apikey.py and name them SPANISH_API_KEY and ENGLISH_API_KEY to use them directly. This file wil be ignored by github.
+1. Go to this website: https://dictionaryapi.com/register/index
+2. Register for a developer account.
+3. When you reach the checkboxes "Request API Key (1)" and "Request API Key (2)", select "Collegiate Dictionary" for English, and "Spanish-English Dictionary" for Spanish.
+4. Confirm your email address.
+5. Log into your account and go to "Your Keys".
+7. Copy your keys (the direct string, not JSON or PHP) and paste them into apikey.py.
